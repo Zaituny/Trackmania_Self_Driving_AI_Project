@@ -1,7 +1,7 @@
 import gym
 from gym import spaces
 
-class Trackmania_env(gym.env):
+class Trackmania_env(gym.Env):
     def __init__(self):
         '''
         This function should define the action space and observation space as well as init the environment
