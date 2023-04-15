@@ -1,5 +1,6 @@
 from tminterface.interface import TMInterface
 from tminterface.client import Client, run_client
+from tminterface.structs import SceneVehicleCar, CachedInput, RealTimeState
 import sys
 
 class MainClient(Client):
@@ -12,14 +13,19 @@ class MainClient(Client):
     def on_run_step(self, iface: TMInterface, _time: int):
         if _time >= 0:
             state = iface.get_simulation_state()
-
-            print(
-                f'Time: {_time}\n' 
-                f'Display Speed: {state.display_speed}\n'
-                f'Position: {state.position}\n'
-                f'Velocity: {state.velocity}\n'
-                f'YPW: {state.yaw_pitch_roll}\n'
-            )
+            RTS = RealTimeState()
+            print(RealTimeState.contact_material_id)
+            #v = SceneVehicleCar()
+            #CI = CachedInput()
+            #print(v.has_any_lateral_contact)
+            #print(CI.event)
+            # print(
+            #     f'Time: {_time}\n' 
+            #     f'Display Speed: {state.display_speed}\n'
+            #     f'Position: {state.position}\n'
+            #     f'Velocity: {state.velocity}\n'
+            #     f'YPW: {state.yaw_pitch_roll}\n'
+            # )
 
 
 def main():
