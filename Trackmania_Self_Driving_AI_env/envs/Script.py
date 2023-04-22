@@ -1,38 +1,33 @@
-from tminterface.interface import TMInterface
+from tminterface.interface import TMInterface, ServerException
 from tminterface.client import Client, run_client
-from tminterface.structs import SceneVehicleCar, CachedInput, RealTimeState
+from tminterface.structs import SceneVehicleCar, SceneVehicleCarState, SimStateData 
 import sys
+import threading
+import time
 
 class MainClient(Client):
+
     def __init__(self) -> None:
         super(MainClient, self).__init__()
+        self.iface = None
 
     def on_registered(self, iface: TMInterface) -> None:
         print(f'Registered to {iface.server_name}')
+        self.iface = iface
 
     def on_run_step(self, iface: TMInterface, _time: int):
-        if _time >= 0:
-            state = iface.get_simulation_state()
-            RTS = RealTimeState()
-            print(RealTimeState.contact_material_id)
-            #v = SceneVehicleCar()
-            #CI = CachedInput()
-            #print(v.has_any_lateral_contact)
-            #print(CI.event)
-            # print(
-            #     f'Time: {_time}\n' 
-            #     f'Display Speed: {state.display_speed}\n'
-            #     f'Position: {state.position}\n'
-            #     f'Velocity: {state.velocity}\n'
-            #     f'YPW: {state.yaw_pitch_roll}\n'
-            # )
-
-
-def main():
+        pass
+     
+def main(client):
     server_name = f'TMInterface{sys.argv[1]}' if len(sys.argv) > 1 else 'TMInterface0'
     print(f'Connecting to {server_name}...')
-    run_client(MainClient(), server_name)
+    iface = TMInterface(server_name, 65535)
 
+    iface.register(client)
+
+    while iface.running:
+        time.sleep(0)
 
 if __name__ == '__main__':
-    main()
+    client = MainClient()
+    threading.Thread(target=main, daemon=False, args=[client]).start()
