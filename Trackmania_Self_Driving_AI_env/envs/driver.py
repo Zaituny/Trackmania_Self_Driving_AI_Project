@@ -27,8 +27,8 @@ from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 
 nb_actions = env.action_space.n
 
-IMG_SHAPE = (84, 84)
-WINDOW_LENGTH = 4
+IMG_SHAPE = (84, 112)
+WINDOW_LENGTH = 8
 
 class ImageProcessor(Processor):
     def process_observation(self, observation):
@@ -51,18 +51,18 @@ class ImageProcessor(Processor):
         return processed_batch
 
     def process_reward(self, reward):
-        return np.clip(reward, -1., 1.)
+        return reward
     
 input_shape = (WINDOW_LENGTH, IMG_SHAPE[0], IMG_SHAPE[1])
 
 model = Sequential()
 model.add(Permute((2, 3, 1), input_shape=input_shape))
 
-model.add(Convolution2D(32, (8, 8), strides=(4, 4),kernel_initializer='he_normal'))
+model.add(Convolution2D(32, (8, 8), padding='same', kernel_initializer='he_normal'))
 model.add(Activation('relu'))
-model.add(Convolution2D(64, (4, 4), strides=(2, 2), kernel_initializer='he_normal'))
+model.add(Convolution2D(64, (4, 4), padding='same', kernel_initializer='he_normal'))
 model.add(Activation('relu'))
-model.add(Convolution2D(64, (3, 3), strides=(1, 1), kernel_initializer='he_normal'))
+model.add(Convolution2D(64, (3, 3), padding='same', kernel_initializer='he_normal'))
 model.add(Activation('relu'))
 model.add(Flatten())
 model.add(Dense(512))
@@ -84,8 +84,8 @@ dqn = DQNAgent(model=model, nb_actions=nb_actions, policy=policy, memory=memory,
 dqn.compile(Adam(learning_rate=.00025), metrics=['mae'])
 
 weights_filename = 'test_dqn_mania_weights.h5f'
-checkpoint_weights_filename = '../expirement_2_weights/test_dqn_' + "mania" + '_weights_{step}.h5f'
-checkpoint_callback = ModelIntervalCheckpoint(checkpoint_weights_filename, interval=1000)
+checkpoint_weights_filename = './expirement_3_weights/test_dqn_' + "mania" + '_weights_{step}.h5f'
+checkpoint_callback = ModelIntervalCheckpoint(checkpoint_weights_filename, interval=100000)
 
 dqn.fit(env, nb_steps=1000000, callbacks=[checkpoint_callback], log_interval=100000, visualize=False)
 
