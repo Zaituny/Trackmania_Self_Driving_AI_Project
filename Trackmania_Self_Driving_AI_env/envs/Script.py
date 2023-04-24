@@ -28,6 +28,19 @@ def main(client):
     while iface.running:
         time.sleep(0)
 
+def get_data(client):
+    time.sleep(0)
+    while True:
+        time.sleep(0)
+        if client.iface:
+            try:
+                if client.iface.get_simulation_state().player_info:
+                    #logging.debug("{} - position: {}".format(client.iface.get_simulation_state().time,
+                    #                                    client.iface.get_simulation_state().simulation_wheels))
+                    time.sleep(0)
+            except ServerException:
+                time.sleep(0)
 if __name__ == '__main__':
     client = MainClient()
     threading.Thread(target=main, daemon=False, args=[client]).start()
+    threading.Thread(target=get_data, daemon=True, args=[client]).start()

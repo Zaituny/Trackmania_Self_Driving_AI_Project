@@ -1,0 +1,13 @@
+Experiment 1:
+the model just using speed and distance array.
+
+Experiment 2:
+the model using speed, rear_gear, lateral_contact, type of contact material.
+
+Experiment 3:
+the model is now using speed, rear_gear, lateral_contact, type of contact material however
+the model gets rewarded for using the accelration and now the game resets if it goes of track instead of waiting for the step_limit to be reached.
+
+some tweaks were made to the model: the strides were all changed to 1 and the input shape were changed to match the screen grab ratio and finally the window length(the number of observations the model looks at at a time) was changed to 8.
+
+the distance array was split into 2, the distance from right wall and the distance from the left wall and the model is now being punished for going right if the distance between the right wall and the car is small and the same goes for the left car.

@@ -28,7 +28,7 @@ from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 nb_actions = env.action_space.n
 
 IMG_SHAPE = (84, 112)
-WINDOW_LENGTH = 8
+WINDOW_LENGTH = 1
 
 class ImageProcessor(Processor):
     def process_observation(self, observation):
@@ -53,16 +53,16 @@ class ImageProcessor(Processor):
     def process_reward(self, reward):
         return reward
     
-input_shape = (WINDOW_LENGTH, IMG_SHAPE[0], IMG_SHAPE[1])
+input_shape = (WINDOW_LENGTH, IMG_SHAPE[1], IMG_SHAPE[0])
 
 model = Sequential()
 model.add(Permute((2, 3, 1), input_shape=input_shape))
 
-model.add(Convolution2D(32, (8, 8), padding='same', kernel_initializer='he_normal'))
+model.add(Convolution2D(32, (8, 8), strides=2, kernel_initializer='he_normal'))
 model.add(Activation('relu'))
-model.add(Convolution2D(64, (4, 4), padding='same', kernel_initializer='he_normal'))
+model.add(Convolution2D(64, (4, 4), strides=2,kernel_initializer='he_normal'))
 model.add(Activation('relu'))
-model.add(Convolution2D(64, (3, 3), padding='same', kernel_initializer='he_normal'))
+model.add(Convolution2D(64, (3, 3), kernel_initializer='he_normal'))
 model.add(Activation('relu'))
 model.add(Flatten())
 model.add(Dense(512))
@@ -78,14 +78,14 @@ policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., valu
                               nb_steps=1000000)
 
 dqn = DQNAgent(model=model, nb_actions=nb_actions, policy=policy, memory=memory,
-               processor=processor, nb_steps_warmup=50000, gamma=.99, target_model_update=10000,
+               processor=processor, nb_steps_warmup=50000, gamma=.99, target_model_update=1000,
               train_interval=4, delta_clip=1)
 
 dqn.compile(Adam(learning_rate=.00025), metrics=['mae'])
 
 weights_filename = 'test_dqn_mania_weights.h5f'
-checkpoint_weights_filename = './expirement_3_weights/test_dqn_' + "mania" + '_weights_{step}.h5f'
-checkpoint_callback = ModelIntervalCheckpoint(checkpoint_weights_filename, interval=100000)
+checkpoint_weights_filename = './experiment_3_weights/test_dqn_' + "mania" + '_weights_{step}.h5f'
+checkpoint_callback = ModelIntervalCheckpoint(checkpoint_weights_filename, interval=10000)
 
 dqn.fit(env, nb_steps=1000000, callbacks=[checkpoint_callback], log_interval=100000, visualize=False)
 

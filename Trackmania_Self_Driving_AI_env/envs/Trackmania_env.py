@@ -4,9 +4,8 @@ from gymnasium.utils import seeding
 import recording
 import numpy as np
 import time
-import logging
 
-logging.basicConfig(filename='debugginh.log', filemode='a', format='%(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+
 
 class TrackmaniaEnv(gym.Env):
     def __init__(self, client):
@@ -28,11 +27,12 @@ class TrackmaniaEnv(gym.Env):
             self.speed = self.player_info.display_speed
             self.rear_gear = self.state.scene_mobil.engine.rear_gear
             self.lateral_contact = self.state.scene_mobil.has_any_lateral_contact
+            self.ypr = self.state.yaw_pitch_roll
         else:
             self.speed = 0
             self.rear_gear = 0
             self.lateral_contact = False
-
+            self.ypr = [0, 0, 0]
         self.STEP_LIMIT = 5000
         self.steps = 0
         self.reset()
@@ -47,8 +47,14 @@ class TrackmaniaEnv(gym.Env):
         self.player_info = self.state.player_info
         if self.player_info:
             self.speed = self.player_info.display_speed
+            self.rear_gear = self.state.scene_mobil.engine.rear_gear
+            self.lateral_contact = self.state.scene_mobil.has_any_lateral_contact
+            self.ypr = self.state.yaw_pitch_roll
         else:
             self.speed = 0
+            self.rear_gear = 0
+            self.lateral_contact = False
+            self.ypr = [0, 0, 0]
         observation = np.array(recording.ImageGrab.grab(bbox=(0, 40, 640, 519)))
         left_distance_array = [recording.count_pixels(observation, 15, (320, 478), ((10, 15, 30), (50, 55, 70)), -1),
         recording.count_pixels(observation, 30, (320, 478), ((10, 15, 30), (50, 55, 70)), -1),
@@ -63,11 +69,10 @@ class TrackmaniaEnv(gym.Env):
                                 recording.count_pixels(observation,  15, (320, 478), ((10, 15, 30), (50, 55, 70)),  1)]
         
         reward = self.calculate_reward(action, left_distance_array, right_distance_array)
-        done = self.game_state()
+        done = self.game_state(observation)
 
         info = {"score": reward}
         self.steps += 1
-        logging.debug("speed: {} rear_gear: {} latral_contact: {}".format(self.speed, self.rear_gear, self.lateral_contact))
         return observation, reward, done, info
     
     def take_action(self, action):
@@ -100,9 +105,9 @@ class TrackmaniaEnv(gym.Env):
         reward = 0
         reward += self.speed
         if action == 0:
-            reward += 10
+            reward += 1000
         if action == 2 and self.player_info.race_time <= 10000:
-            reward += -100
+            reward += -10000
         if self.rear_gear:
             reward += -1
         if any(i.real_time_state.has_ground_contact for i in self.state.simulation_wheels):
@@ -116,11 +121,10 @@ class TrackmaniaEnv(gym.Env):
             reward += -10000
         return reward
     
-    def game_state(self):
-        if any(i.real_time_state.contact_material_id != 16 and 
-               i.real_time_state.contact_material_id != 9 and
-                i.real_time_state.contact_material_id != 6 for i in self.state.simulation_wheels):
-            logging.debug("contact_material_id: {}".format(self.state.simulation_wheels[0].real_time_state.contact_material_id))
+    def game_state(self, img):
+        if recording.on_grass(img, ([12, 42, 27]), ([46, 120, 81])):
+            return True
+        if self.ypr[1] >= 2.8:
             return True
         if self.steps >= self.STEP_LIMIT:
             return True
