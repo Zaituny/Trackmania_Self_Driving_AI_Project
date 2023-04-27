@@ -1,11 +1,8 @@
 import gymnasium as gym
-from gymnasium import error, spaces, utils
-from gymnasium.utils import seeding
+from gymnasium import spaces
 import recording
 import numpy as np
 import time
-
-
 
 class TrackmaniaEnv(gym.Env):
     def __init__(self, client):

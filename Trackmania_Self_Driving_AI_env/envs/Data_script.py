@@ -5,7 +5,6 @@ import pandas as pd
 import recording
 from PIL import ImageGrab
 import numpy as np
-import multiprocessing
 import concurrent.futures
 df = pd.DataFrame(columns=['img',
                            'left_15',
@@ -19,7 +18,8 @@ df = pd.DataFrame(columns=['img',
                            'right_60',
                            'right_75',
                            'speed',
-                           'label'])
+                           'label',
+                           'steer'])
 
 screens_list = []
 states_list = []
@@ -45,8 +45,7 @@ class MainClient(Client):
             state = iface.get_simulation_state()
             self.curr = np.array([state.input_accelerate,
                                 state.input_brake,
-                                state.input_left,
-                                state.input_right])
+                                state.input_steer])
             screen = ImageGrab.grab(bbox=(0, 40, 640, 519))
             self.screens_list.append(screen)
             self.states_list.append(state)
@@ -60,28 +59,34 @@ def main(client):
     return (client)
 
 def fill_df(screen, state, _time, curr):
-    if np.array_equal(curr, np.array([True, False, False, False])):
+    # if np.array_equal(curr, np.array([True, False, False, False])):
+    #     label = 0
+    # elif np.array_equal(curr, np.array([False, True, False, False])):
+    #     label = 1
+    # elif np.array_equal(curr, np.array([False, False, True, False])):
+    #     label = 2
+    # elif np.array_equal(curr, np.array([False, False, False, True])):
+    #     label = 3
+    # elif np.array_equal(curr, np.array([True, True, False, False])):
+    #     label = 4
+    # elif np.array_equal(curr, np.array([True, False, True, False])):
+    #     label = 5
+    # elif np.array_equal(curr, np.array([True, False, False, True])):
+    #     label = 6
+    # elif np.array_equal(curr, np.array([False, True, True, False])):
+    #     label = 7
+    # elif np.array_equal(curr, np.array([False, True, False, True])):
+    #     label = 8
+    # else:
+    #     label = 9
+    if curr[0]:
         label = 0
-    elif np.array_equal(curr, np.array([False, True, False, False])):
+    elif curr[1]:
         label = 1
-    elif np.array_equal(curr, np.array([False, False, True, False])):
-        label = 2
-    elif np.array_equal(curr, np.array([False, False, False, True])):
-        label = 3
-    elif np.array_equal(curr, np.array([True, True, False, False])):
-        label = 4
-    elif np.array_equal(curr, np.array([True, False, True, False])):
-        label = 5
-    elif np.array_equal(curr, np.array([True, False, False, True])):
-        label = 6
-    elif np.array_equal(curr, np.array([False, True, True, False])):
-        label = 7
-    elif np.array_equal(curr, np.array([False, True, False, True])):
-        label = 8
     else:
-        label = 9
+        label = 2
 
-    screen_path = './img_data/img_A01_{}.jpg'.format(_time)
+    screen_path = './img_data/img_C01_karjen_{}.jpg'.format(_time)
     screen.save(screen_path)
     screen = np.array(screen)
     left_15_distance = recording.count_pixels(screen, 15, (320, 478), ((10, 15, 30), (50, 55, 70)), -1)
@@ -107,7 +112,8 @@ def fill_df(screen, state, _time, curr):
                             right_60_distance,
                             right_75_distance,
                             speed,
-                            label]
+                            label,
+                            curr[2]]
 
 if __name__ == "__main__":
     client = MainClient(screens_list, states_list, time, curr_list)
@@ -120,4 +126,4 @@ if __name__ == "__main__":
                 result.states_list[i],
                 result.time[i],
                 result.curr_list[i])
-    df.to_csv("A01.csv", index=False)
+    df.to_csv("readings/C01-karjen.csv", index=False)
