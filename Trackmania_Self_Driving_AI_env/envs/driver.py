@@ -8,7 +8,6 @@ Script.threading.Thread(target=Script.main, daemon=False, args=[client]).start()
 env = Trackmania_env.TrackmaniaEnv(client)
 
 time.sleep(1)
-
 from PIL import Image  # To transform the image in the Processor
 import numpy as np
 import gymnasium as gym
